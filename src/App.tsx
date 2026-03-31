@@ -1,4 +1,5 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
+import { FrontPage } from './components/FrontPage'
 
 const W = 800, H = 300, GROUND_Y = 240
 const GRAVITY = 0.6, JUMP_V = -13
@@ -249,7 +250,7 @@ function drawDead(ctx: CanvasRenderingContext2D, score: number, hi: number, fram
 const CLAWD_W = 15 * 4  // 60px (15 units incl. arms)
 const CLAWD_H = 9 * 4   // 36px (6 body + 3 legs max)
 
-export default function App() {
+function GameCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const s = useRef({
     gs: 'idle' as GameState, py: GROUND_Y - CLAWD_H, vy: 0, ground: true,
@@ -352,4 +353,14 @@ export default function App() {
       </div>
     </div>
   )
+}
+
+export default function App() {
+  const [started, setStarted] = useState(false)
+
+  if (!started) {
+    return <FrontPage onPlay={() => setStarted(true)} />
+  }
+
+  return <GameCanvas />
 }
