@@ -4,7 +4,7 @@ import { FrontPage } from './components/FrontPage'
 
 const GROUND_RATIO = 0.78  // ground line at 78% of canvas height
 const GRAVITY = 0.6, JUMP_V = -13
-const INIT_SPEED = 5, MAX_SPEED = 14, SPEED_INC = 0.0015
+const INIT_SPEED = 7, MAX_SPEED = 22, SPEED_INC = 0.003
 
 const CLR = {
   bg:       '#F0EAE0',
