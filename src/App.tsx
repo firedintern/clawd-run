@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
+import { Claude } from '@lobehub/icons'
 import { FrontPage } from './components/FrontPage'
 
 const W = 800, H = 300, GROUND_Y = 240
@@ -359,16 +360,17 @@ function drawHUD(ctx: CanvasRenderingContext2D, score: number, hi: number, speed
 function drawIdle(ctx: CanvasRenderingContext2D, frame: number) {
   const p = (Math.sin(frame * 0.05) + 1) / 2
   ctx.save(); ctx.textAlign = 'center'
-  drawRoundRect(ctx, W/2 - 200, 85, 400, 110, 12)
+  // Card sits in lower half — avatar overlay occupies the upper area
+  drawRoundRect(ctx, W/2 - 180, 148, 360, 100, 12)
   ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fill()
   ctx.strokeStyle = 'rgba(200,98,58,0.2)'; ctx.lineWidth = 1.5; ctx.stroke()
   ctx.font = 'bold 34px Lora, Georgia, serif'; ctx.fillStyle = CLR.orange
-  ctx.fillText('CLAWD RUN', W/2, 128)
+  ctx.fillText('CLAWD RUN', W/2, 188)
   ctx.font = '12px Lora, Georgia, serif'; ctx.fillStyle = CLR.mid
-  ctx.fillText('dodge the errors. survive the rate limits.', W/2, 152)
+  ctx.fillText('dodge the errors. survive the rate limits.', W/2, 210)
   ctx.font = '11px Lora, Georgia, serif'
   ctx.fillStyle = `rgba(200,98,58,${0.5 + p * 0.5})`
-  ctx.fillText('[ SPACE ] or [ TAP ] to start', W/2, 178)
+  ctx.fillText('[ SPACE ] or [ TAP ] to start', W/2, 232)
   ctx.restore()
 }
 
@@ -376,17 +378,18 @@ function drawDead(ctx: CanvasRenderingContext2D, score: number, hi: number, fram
   const p = (Math.sin(frame * 0.08) + 1) / 2
   ctx.save()
   ctx.fillStyle = 'rgba(240,234,224,0.7)'; ctx.fillRect(0, 0, W, H)
-  drawRoundRect(ctx, W/2-180, 78, 360, 120, 12)
+  // Card in lower half — avatar overlay above
+  drawRoundRect(ctx, W/2-180, 148, 360, 110, 12)
   ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fill()
   ctx.strokeStyle = CLR.error; ctx.lineWidth = 2; ctx.stroke()
   ctx.textAlign = 'center'
   ctx.font = 'bold 26px Lora, Georgia, serif'; ctx.fillStyle = CLR.error
-  ctx.fillText('RATE LIMITED', W/2, 115)
+  ctx.fillText('RATE LIMITED', W/2, 185)
   ctx.font = '12px Lora, Georgia, serif'; ctx.fillStyle = CLR.charcoal
-  ctx.fillText(`score: ${score}  |  best: ${hi}`, W/2, 145)
+  ctx.fillText(`score: ${score}  |  best: ${hi}`, W/2, 212)
   ctx.font = '11px Lora, Georgia, serif'
   ctx.fillStyle = `rgba(200,98,58,${0.5 + p * 0.5})`
-  ctx.fillText('[ SPACE ] or [ TAP ] to retry', W/2, 175)
+  ctx.fillText('[ SPACE ] or [ TAP ] to retry', W/2, 238)
   ctx.restore()
 }
 
@@ -395,11 +398,13 @@ const CLAWD_H = 9 * 4   // 36px
 
 function GameCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [gsView, setGsView] = useState<GameState>('idle')
   const s = useRef({
     gs: 'idle' as GameState, py: GROUND_Y - CLAWD_H, vy: 0, ground: true,
     obs: [] as Obstacle[], score: 0, hi: 0, speed: INIT_SPEED,
     frame: 0, bgOff: 0, nextObs: 120, animId: 0,
     wasGround: true, lastMilestone: 0,
+    prevGs: 'idle' as GameState,
   })
 
   const spawn = useCallback(() => {
@@ -516,6 +521,7 @@ function GameCanvas() {
           }
         }
       }
+      if (st.gs !== st.prevGs) { st.prevGs = st.gs; setGsView(st.gs) }
       ctx.clearRect(0,0,W,H)
       drawBg(ctx, st.bgOff)
       st.obs.forEach(o => {
@@ -548,18 +554,84 @@ function GameCanvas() {
       <div style={{ color: CLR.muted, fontSize: 11, letterSpacing: 3, marginBottom: 12, textTransform: 'uppercase' }}>
         clawd.run
       </div>
-      <canvas
-        ref={canvasRef} width={W} height={H} onClick={jump}
-        style={{
-          display: 'block',
-          cursor: 'pointer',
-          borderRadius: 10,
-          border: `1px solid rgba(200,98,58,0.2)`,
-          boxShadow: '0 4px 24px rgba(180,120,80,0.15), 0 1px 4px rgba(0,0,0,0.06)',
-          maxWidth: '100%',
-          imageRendering: 'pixelated',
-        }}
-      />
+
+      {/* Canvas + overlay wrapper */}
+      <div style={{ position: 'relative', maxWidth: '100%' }}>
+        <canvas
+          ref={canvasRef} width={W} height={H} onClick={jump}
+          style={{
+            display: 'block',
+            cursor: 'pointer',
+            borderRadius: 10,
+            border: `1px solid rgba(200,98,58,0.2)`,
+            boxShadow: '0 4px 24px rgba(180,120,80,0.15), 0 1px 4px rgba(0,0,0,0.06)',
+            maxWidth: '100%',
+            imageRendering: 'pixelated',
+          }}
+        />
+
+        {/* Avatar overlay — idle screen */}
+        {gsView === 'idle' && (
+          <div style={{
+            position: 'absolute',
+            top: '18%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            pointerEvents: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 4,
+          }}>
+            <div style={{
+              borderRadius: '50%',
+              boxShadow: '0 2px 16px rgba(200,98,58,0.25)',
+              animation: 'clawd-bob 2s ease-in-out infinite',
+            }}>
+              <Claude.Avatar size={72} />
+            </div>
+          </div>
+        )}
+
+        {/* Avatar overlay — dead screen */}
+        {gsView === 'dead' && (
+          <div style={{
+            position: 'absolute',
+            top: '14%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            pointerEvents: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}>
+            <div style={{
+              borderRadius: '50%',
+              filter: 'grayscale(60%) brightness(0.85)',
+              animation: 'clawd-shake 0.4s ease-in-out 1',
+              boxShadow: '0 2px 12px rgba(192,57,43,0.3)',
+            }}>
+              <Claude.Avatar size={72} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <style>{`
+        @keyframes clawd-bob {
+          0%, 100% { transform: translateY(0px); }
+          50%       { transform: translateY(-6px); }
+        }
+        @keyframes clawd-shake {
+          0%   { transform: rotate(0deg); }
+          20%  { transform: rotate(-8deg); }
+          40%  { transform: rotate(8deg); }
+          60%  { transform: rotate(-5deg); }
+          80%  { transform: rotate(5deg); }
+          100% { transform: rotate(0deg); }
+        }
+      `}</style>
+
       <div style={{ marginTop: 14, color: CLR.muted, fontSize: 10, letterSpacing: 2 }}>
         SPACE · ↑ · TAP to jump
       </div>
