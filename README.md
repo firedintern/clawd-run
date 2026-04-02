@@ -4,6 +4,9 @@ A browser-based endless runner game featuring **Clawd** — the Claude Code masc
 
 Inspired by the Google Chrome offline Dino game.
 
+![Image Alt]([image_url](https://github.com/firedintern/clawd-run/blob/114850f46340c41afc331ffd399e8122655badd9/Screenshot%202026-04-02%20at%2011.56.53.png)
+![Image Alt]([image_url](https://github.com/firedintern/clawd-run/blob/114850f46340c41afc331ffd399e8122655badd9/Screenshot%202026-04-02%20at%2011.57.29.png)
+
 ## 🎮 Play
 
 Open `bundle.html` in your browser — no install needed.
